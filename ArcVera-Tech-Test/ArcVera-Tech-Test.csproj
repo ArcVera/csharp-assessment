@@ -10,6 +10,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="january-era5.parquet" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="january-era5.parquet" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="OxyPlot.Core" Version="2.1.2" />
     <PackageReference Include="OxyPlot.WindowsForms" Version="2.1.2" />
     <PackageReference Include="Parquet.Net" Version="4.24.0" />
