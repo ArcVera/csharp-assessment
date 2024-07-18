@@ -32,6 +32,7 @@ namespace ArcVera_Tech_Test
                 dgImportedEra5.DataSource = dt; // Display data in DataGridView
             }
         }
+        //Read
 
         private DataTable ReadParquetFile(string filePath)
         {
