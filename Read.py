@@ -26,3 +26,15 @@ def agrupar_dados(df, modo='Diário'):
         pass 
         
     return df
+
+if __name__ == "__main__":
+    # Passo 1: Read ERA5 from Parquet file
+    arquivo = 'january-era5.parquet'
+    dados_era5 = ler_dados_era5(arquivo)
+    
+    # Passo 2: Export CSV
+    csv_saida = 'dados_era5.csv'
+    exportar_para_csv(dados_era5, csv_saida)
+    print(f'CSV exportado para {csv_saida}')
+
+
