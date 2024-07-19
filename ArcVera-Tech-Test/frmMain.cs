@@ -6,6 +6,9 @@ using OxyPlot.Series;
 using OxyPlot.WindowsForms;
 using DataColumn = System.Data.DataColumn;
 using OxyPlot.Axes;
+using System.Formats.Asn1;
+using CsvHelper;
+using CsvHelper.Configuration;
 
 namespace ArcVera_Tech_Test
 {
@@ -97,12 +100,97 @@ namespace ArcVera_Tech_Test
             plotView1.Model = plotModel;
         }
 
-        private void btnExportCsv_Click(object sender, EventArgs e)
+        private async void btnExportCsv_Click(object sender, EventArgs e)
         {
-            // Complete here
+            // Specify the paths
+            string parquetFilePath = "path_to_your_parquet_file.parquet";
+            string csvFilePath = "path_to_save_csv_file.csv";
+
+            try
+            {
+                // Read the Parquet file
+                DataTable dataTable = await ReadParquetFileAsyncs(parquetFilePath);
+
+                // Write the data to CSV
+                WriteDataTableToCsv(dataTable, csvFilePath);
+
+                MessageBox.Show("CSV file has been exported successfully.", "Export CSV", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occurred while exporting the CSV file: " + ex.Message, "Export CSV", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
-        private void btnExportExcel_Click(object sender, EventArgs e)
+        private async Task<DataTable> ReadParquetFileAsyncs(string parquetFilePath)
+        {
+            DataTable dataTable = new DataTable();
+
+            using (Stream fileStream = System.IO.File.OpenRead(parquetFilePath))
+            {
+                using (var parquetReader = await ParquetReader.CreateAsync(fileStream))
+                {
+                    DataField[] dataFields = parquetReader.Schema.GetDataFields();
+                    foreach (var dataField in dataFields)
+                    {
+                        dataTable.Columns.Add(dataField.Name);
+                    }
+
+                    for (int i = 0; i < parquetReader.RowGroupCount; i++)
+                    {
+                        using (ParquetRowGroupReader rowGroupReader = parquetReader.OpenRowGroupReader(i))
+                        {
+                            List<object[]> rows = new List<object[]>();
+                            foreach (DataField dataField in dataFields)
+                            {
+                                DataColumn column = dataTable.Columns[dataField.Name];
+                                Parquet.Data.DataColumn result = await rowGroupReader.ReadColumnAsync(dataField);
+                                Array data = result.Data;
+                                for (int j = 0; j < data.Length; j++)
+                                {
+                                    if (rows.Count <= j)
+                                    {
+                                        rows.Add(new object[dataFields.Length]);
+                                    }
+                                    rows[j][Array.IndexOf(dataFields, dataField)] = data.GetValue(j);
+                                }
+                            }
+                            foreach (var row in rows)
+                            {
+                                dataTable.Rows.Add(row);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return dataTable;
+        }
+
+        private void WriteDataTableToCsv(DataTable dataTable, string csvFilePath)
+        {
+            using (var writer = new StreamWriter(csvFilePath))
+            using (var csv = new CsvWriter(writer, new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)))
+            {
+                // Write the column headers
+                foreach (DataColumn column in dataTable.Columns)
+                {
+                    csv.WriteField(column.ColumnName);
+                }
+                csv.NextRecord();
+
+                // Write the data
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    foreach (DataColumn column in dataTable.Columns)
+                    {
+                        csv.WriteField(row[column]);
+                    }
+                    csv.NextRecord();
+                }
+            }
+        }
+            private void btnExportExcel_Click(object sender, EventArgs e)
         {
             // Complete here
         }
