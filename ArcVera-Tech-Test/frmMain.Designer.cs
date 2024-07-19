@@ -1,4 +1,10 @@
-﻿namespace ArcVera_Tech_Test
+﻿using System;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+ 
+namespace ArcVera_Tech_Test
 {
     partial class frmMain
     {
@@ -34,6 +40,13 @@
             btnExportExcel = new Button();
             dgImportedEra5 = new DataGridView();
             plotView1 = new OxyPlot.WindowsForms.PlotView();
+            comboBoxViewType = new ComboBox();
+            comboBoxViewType.Location = new Point(10, 10);
+            comboBoxViewType.Size = new Size(121, 21);
+            comboBoxViewType.Items.Add("Daily");
+            comboBoxViewType.Items.Add("Weekly");
+            comboBoxViewType.SelectedIndex = 0;
+            this.Controls.Add(comboBoxViewType);
             ((System.ComponentModel.ISupportInitialize)dgImportedEra5).BeginInit();
             SuspendLayout();
             // 
@@ -112,3 +125,4 @@
         private OxyPlot.WindowsForms.PlotView plotView1;
     }
 }
+
