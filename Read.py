@@ -28,13 +28,28 @@ def agrupar_dados(df, modo='Diário'):
     return df
 
 if __name__ == "__main__":
-    # Passo 1: Read ERA5 from Parquet file
+    # Step 1: Read ERA5 from Parquet file
     arquivo = 'january-era5.parquet'
     dados_era5 = ler_dados_era5(arquivo)
     
-    # Passo 2: Export CSV
+    # Step 2: Export CSV
     csv_saida = 'dados_era5.csv'
     exportar_para_csv(dados_era5, csv_saida)
     print(f'CSV exportado para {csv_saida}')
+
+    # Step 3: Export Excel
+    excel_saida = 'dados_era5.xlsx'
+    exportar_para_excel(dados_era5, excel_saida)
+    print(f'Excel exportado para {excel_saida}')
+    
+     # Step 4: Show Week/Daily
+    daily_view = 'Diário'
+    daily = agrupar_dados(dados_era5, modo=daily_view)
+    week_view = 'Semanal'  
+    week = agrupar_dados(dados_era5, modo=week_view)
+
+     # Step 5 Color the u10 negative values 
+    dados_estilizados = exibir_dados_com_estilo(dados_era5)
+    dados_estilizados.show()  
 
 
