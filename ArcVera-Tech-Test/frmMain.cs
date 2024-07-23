@@ -19,7 +19,7 @@ namespace ArcVera_Tech_Test
         private ComboBox comboBoxViewType;
         public frmMain()
         {
-            InitializeComponent();         
+            InitializeComponent();
         }
 
         private async void btnImportEra5_Click(object sender, EventArgs e)
@@ -302,6 +302,10 @@ namespace ArcVera_Tech_Test
             }
         }
 
+        private void comboBoxViewType_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 
 }
