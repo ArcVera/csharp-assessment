@@ -11,6 +11,8 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
+using System.Drawing;
+using ClosedXML.Excel;
 
 namespace ArcVera_Tech_Test
 {
@@ -213,17 +215,13 @@ namespace ArcVera_Tech_Test
         }
         private void btnExportExcel_Click(object sender, EventArgs e)
         {
-            // Specify the paths
             string inputExcelFilePath = "C:\\Users\\ASUS\\Downloads\\Excel.xlsx"; // Replace with actual input file path
             string outputExcelFilePath = "C:\\Users\\ASUS\\Downloads\\output.xlsx"; // Replace with desired output file path
 
             try
             {
-                // Read the Excel file
-                DataTable dataTable = ReadExcelFile(inputExcelFilePath);
-
-                // Write the data to a new Excel file
-                WriteDataTableToExcel(dataTable, outputExcelFilePath);
+                DataTable dataTable = ReadExcelFileClosedXML(inputExcelFilePath);
+                WriteDataTableToExcelClosedXML(dataTable, outputExcelFilePath);
 
                 MessageBox.Show("Excel file has been exported successfully.", "Export Excel", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -233,48 +231,51 @@ namespace ArcVera_Tech_Test
             }
         }
 
-        private DataTable ReadExcelFile(string excelFilePath)
+        private DataTable ReadExcelFileClosedXML(string excelFilePath)
         {
             DataTable dataTable = new DataTable();
 
-            FileInfo fileInfo = new FileInfo(excelFilePath);
-            using (ExcelPackage package = new ExcelPackage(fileInfo))
+            using (var workbook = new XLWorkbook(excelFilePath))
             {
-                ExcelWorksheet worksheet = package.Workbook.Worksheets[0]; // Assuming the data is in the first worksheet
+                var worksheet = workbook.Worksheet(1); // Assuming data is in the first worksheet
 
-                // Add columns to DataTable
-                foreach (var firstRowCell in worksheet.Cells[1, 1, 1, worksheet.Dimension.End.Column])
+                bool firstRow = true;
+                foreach (var row in worksheet.RowsUsed())
                 {
-                    dataTable.Columns.Add(firstRowCell.Text);
-                }
-
-                // Add rows to DataTable
-                for (int rowNum = 2; rowNum <= worksheet.Dimension.End.Row; rowNum++)
-                {
-                    var wsRow = worksheet.Cells[rowNum, 1, rowNum, worksheet.Dimension.End.Column];
-                    DataRow row = dataTable.NewRow();
-                    foreach (var cell in wsRow)
+                    if (firstRow)
                     {
-                        row[cell.Start.Column - 1] = cell.Text;
+                        foreach (var cell in row.Cells())
+                        {
+                            dataTable.Columns.Add(cell.Value.ToString());
+                        }
+                        firstRow = false;
                     }
-                    dataTable.Rows.Add(row);
+                    else
+                    {
+                        var dataRow = dataTable.NewRow();
+                        int i = 0;
+                        foreach (var cell in row.Cells())
+                        {
+                            dataRow[i++] = cell.Value.ToString();
+                        }
+                        dataTable.Rows.Add(dataRow);
+                    }
                 }
             }
 
             return dataTable;
         }
 
-        private void WriteDataTableToExcel(DataTable dataTable, string excelFilePath)
+        private void WriteDataTableToExcelClosedXML(DataTable dataTable, string excelFilePath)
         {
-            FileInfo fileInfo = new FileInfo(excelFilePath);
-            using (ExcelPackage package = new ExcelPackage(fileInfo))
+            using (var workbook = new XLWorkbook())
             {
-                ExcelWorksheet worksheet = package.Workbook.Worksheets.Add("Sheet1");
+                var worksheet = workbook.Worksheets.Add("Sheet1");
 
                 // Add column headers
                 for (int col = 0; col < dataTable.Columns.Count; col++)
                 {
-                    worksheet.Cells[1, col + 1].Value = dataTable.Columns[col].ColumnName;
+                    worksheet.Cell(1, col + 1).Value = dataTable.Columns[col].ColumnName;
                 }
 
                 // Add rows and apply formatting
@@ -282,7 +283,8 @@ namespace ArcVera_Tech_Test
                 {
                     for (int col = 0; col < dataTable.Columns.Count; col++)
                     {
-                        worksheet.Cells[row + 2, col + 1].Value = dataTable.Rows[row][col];
+                        var cellValue = dataTable.Rows[row][col];
+                        worksheet.Cell(row + 2, col + 1).Value = cellValue != DBNull.Value ? cellValue.ToString() : string.Empty;
                     }
 
                     // Check if the value in the 'u10' column is negative and color the row if so
@@ -291,14 +293,13 @@ namespace ArcVera_Tech_Test
                         var u10Value = dataTable.Rows[row]["u10"];
                         if (u10Value != DBNull.Value && Convert.ToDouble(u10Value) < 0)
                         {
-                            var startCell = worksheet.Cells[row + 2, 1, row + 2, dataTable.Columns.Count];
-                            startCell.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                            startCell.Style.Fill.BackgroundColor.SetColor(Color.Red);
+                            var rowRange = worksheet.Range(row + 2, 1, row + 2, dataTable.Columns.Count);
+                            rowRange.Style.Fill.BackgroundColor = XLColor.Red;
                         }
                     }
                 }
 
-                package.Save();
+                workbook.SaveAs(excelFilePath);
             }
         }
 
