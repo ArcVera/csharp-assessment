@@ -34,6 +34,7 @@
             btnExportExcel = new Button();
             dgImportedEra5 = new DataGridView();
             plotView1 = new OxyPlot.WindowsForms.PlotView();
+            cbViewType = new ComboBox();
             ((System.ComponentModel.ISupportInitialize)dgImportedEra5).BeginInit();
             SuspendLayout();
             // 
@@ -87,11 +88,23 @@
             plotView1.ZoomRectangleCursor = Cursors.SizeNWSE;
             plotView1.ZoomVerticalCursor = Cursors.SizeNS;
             // 
+            // cbViewType
+            // 
+            cbViewType.FormattingEnabled = true;
+            cbViewType.Items.AddRange(new object[] {
+            "Daily",
+            "Weekly"});
+            cbViewType.Location = new Point(274, 12);
+            cbViewType.Name = "cbViewType";
+            cbViewType.Size = new Size(121, 23);
+            cbViewType.TabIndex = 5;
+            // 
             // frmMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1175, 584);
+            Controls.Add(cbViewType);
             Controls.Add(plotView1);
             Controls.Add(dgImportedEra5);
             Controls.Add(btnExportExcel);
@@ -110,5 +123,6 @@
         private Button btnExportExcel;
         private DataGridView dgImportedEra5;
         private OxyPlot.WindowsForms.PlotView plotView1;
+        private ComboBox cbViewType;
     }
 }
